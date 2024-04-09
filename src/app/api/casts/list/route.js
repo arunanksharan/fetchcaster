@@ -16,17 +16,17 @@ export async function POST(request) {
   try {
     const { channelParentUrl } = await request.json();
 
-    console.log(channelParentUrl);
+    // console.log(channelParentUrl);
     const endDate = new Date().toISOString();
 
     // Start Date as 90 days before the end date
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 90);
 
-    console.log('startDate', startDate);
-    console.log('endDate', endDate);
+    // console.log('startDate', startDate);
+    // console.log('endDate', endDate);
 
-    const feed = await client.fetchFeed(FeedType.Filter, {
+    let feed = await client.fetchFeed(FeedType.Filter, {
       filterType: FilterType.ParentUrl,
       parentUrl: channelParentUrl,
       limit: 100,
@@ -83,32 +83,52 @@ export async function POST(request) {
       );
     }
 
-    const { casts } = feed;
+    let { casts } = feed;
 
     // Get the date of the last cast
-    const lastCast = casts[casts.length - 1];
+    let lastCast = casts[casts.length - 1];
 
     // Timestamp of last cast
-    const lastCastTimestamp = new Date(lastCast.timestamp);
+    let lastCastTimestamp = new Date(lastCast.timestamp);
+    // console.log('lastCastTimestamp', lastCastTimestamp);
+    // console.log('Comparison', lastCastTimestamp > startDate);
 
-    // // Keep calling Neynar API until last cast timestamp is less than the start date
-    // while (lastCastTimestamp > startDateObj) {
-    //   const newFeed = await client.fetchFeed(FeedType.Filter, {
-    //     filterType: FilterType.ParentUrl,
-    //     parentUrl: channelParentUrl,
-    //     cursor: lastCast.hash,
-    //   });
+    // let count = 0;
+    // while (count < 3) {
+    while (lastCastTimestamp >= startDate) {
+      feed = await client.fetchFeed(FeedType.Filter, {
+        filterType: FilterType.ParentUrl,
+        parentUrl: channelParentUrl,
+        limit: 100,
+        cursor: feed.next.cursor,
+      });
 
-    //   if (!newFeed || !newFeed.casts || newFeed.casts.length === 0) {
-    //     break;
-    //   }
+      if (!feed || !feed.casts || feed.casts.length === 0) {
+        break;
+      }
 
-    //   casts.push(...newFeed.casts);
-    //   lastCast = casts[casts.length - 1];
-    //   lastCastTimestamp = new Date(lastCast.timestamp);
-    // }
+      casts.push(...feed.casts);
+      lastCast = feed.casts[feed.casts.length - 1];
+      lastCastTimestamp = new Date(lastCast.timestamp);
+      //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      //   console.log(
+      //     'Inside while 110 newfeeds last cast timestamp',
+      //     feed.casts[feed.casts.length - 1].timestamp
+      //   );
+      //   console.log('---------------------------------------------');
+      //   console.log('Inside while 110 lastCastTimestamp', lastCastTimestamp);
+      //   console.log('Inside while 111 casts length', casts.length);
+      //   console.log('Comparison inside while 112', lastCastTimestamp > startDate);
+      //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      //   count++;
+    }
 
-    // console.log('line 38', casts[0]);
+    // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    // console.log('cast[0]', casts[0]);
+    // console.log('casts.length', casts.length);
+    // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
     const castParagraphs = casts.flatMap((cast) => {
       const authorDetails = getAuthor(cast);

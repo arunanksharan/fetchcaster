@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { getCastsForChannel } from './server/actions';
 import { FormEvent, useState } from 'react';
 import { saveAs } from 'file-saver';
-import { API_URL } from './utils/loadEnv';
+// import { API_URL, LOCALHOST_URL } from './utils/loadEnv';
 
 export default function Home() {
   const [startDate, setStartDate] = useState('');
@@ -18,14 +18,18 @@ export default function Home() {
       endDate,
     };
     console.log('formdata', formData);
-    console.log('API_URL', API_URL);
-    const wordRes = await fetch(`${API_URL}api/casts/list`, {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // console.log('API_URL', API_URL);
+    // const wordRes = await fetch('http://localhost:3000/api/casts/list', {
+    const wordRes = await fetch(
+      'https://fetchcaster.vercel.app/api/casts/list',
+      {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     console.log('wordRes', wordRes);
 
@@ -84,6 +88,7 @@ export default function Home() {
           >
             Get Casts
           </button>
+          <span>(Last 90 days)</span>
         </form>
       </div>
     </main>
