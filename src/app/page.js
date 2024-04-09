@@ -17,7 +17,7 @@ export default function Home() {
       endDate,
     };
     console.log('formdata', formData);
-    const wordRes = await fetch('http://localhost:3000/api/casts/list', {
+    const wordRes = await fetch(`${NEXT_PUBLIC_BASE_URL}api/casts/list`, {
       method: 'POST',
       body: JSON.stringify(formData),
       headers: {

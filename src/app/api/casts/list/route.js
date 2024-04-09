@@ -23,15 +23,16 @@ export async function POST(request) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 90);
 
-    console.log(startDate);
-    console.log(endDate);
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
 
     const feed = await client.fetchFeed(FeedType.Filter, {
       filterType: FilterType.ParentUrl,
       parentUrl: channelParentUrl,
+      limit: 100,
     });
 
-    console.log(feed);
+    // console.log(feed);
 
     // Check for dates
     // if (!startDate || !endDate) {
@@ -85,10 +86,10 @@ export async function POST(request) {
     const { casts } = feed;
 
     // Get the date of the last cast
-    // const lastCast = casts[casts.length - 1];
+    const lastCast = casts[casts.length - 1];
 
-    // // Timestamp of last cast
-    // const lastCastTimestamp = new Date(lastCast.timestamp);
+    // Timestamp of last cast
+    const lastCastTimestamp = new Date(lastCast.timestamp);
 
     // // Keep calling Neynar API until last cast timestamp is less than the start date
     // while (lastCastTimestamp > startDateObj) {
@@ -113,10 +114,10 @@ export async function POST(request) {
       const authorDetails = getAuthor(cast);
       const castId = cast.hash.slice(0, 10);
       const castUrl = `https://warpcast.com/${authorDetails.username}/${castId}`;
-      console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-      console.log(castUrl);
-      console.log(authorDetails);
-      console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      //   console.log(castUrl);
+      //   console.log(authorDetails);
+      //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
       return [
         new Paragraph({
           children: [
