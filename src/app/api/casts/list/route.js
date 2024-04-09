@@ -14,9 +14,15 @@ export async function GET(request) {
 }
 export async function POST(request) {
   try {
-    const { channelParentUrl, startDate, endDate } = await request.json();
+    const { channelParentUrl } = await request.json();
 
     console.log(channelParentUrl);
+    const endDate = new Date().toISOString();
+
+    // Start Date as 90 days before the end date
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 90);
+
     console.log(startDate);
     console.log(endDate);
 
@@ -28,30 +34,30 @@ export async function POST(request) {
     console.log(feed);
 
     // Check for dates
-    if (!startDate || !endDate) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          data: {},
-          message: 'Please provide both start and end dates',
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // if (!startDate || !endDate) {
+    //   return new Response(
+    //     JSON.stringify({
+    //       success: false,
+    //       data: {},
+    //       message: 'Please provide both start and end dates',
+    //     }),
+    //     { status: 200, headers: { 'Content-Type': 'application/json' } }
+    //   );
+    // }
 
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
+    // const startDateObj = new Date(startDate);
+    // const endDateObj = new Date(endDate);
 
-    if (endDateObj < startDateObj) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          data: {},
-          message: 'End date cannot be earlier than start date',
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // if (endDateObj < startDateObj) {
+    //   return new Response(
+    //     JSON.stringify({
+    //       success: false,
+    //       data: {},
+    //       message: 'End date cannot be earlier than start date',
+    //     }),
+    //     { status: 200, headers: { 'Content-Type': 'application/json' } }
+    //   );
+    // }
 
     // Check for feed
     if (!feed) {

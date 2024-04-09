@@ -35,15 +35,18 @@ export default function Home() {
     }
   };
   return (
-    <main className="flex min-w-screen min-h-screen flex-col items-center justify-between p-24">
-      <div className="w-2/5 h-1/2 rounded-lg border border-gray-400">
+    <main className="flex min-w-screen min-h-screen flex-col items-center justify-center lg:p-24">
+      <div className="w-4/5  pb-20 flex flex-col justify-center items-center rounded-lg border border-gray-400 sm:min-w-96">
+        <div className="w-full bg-red-200 rounded-t-lg pb-2 mb-4 flex justify-center items-center text-black md:text-6xl sm:text-4xl text-4xl font-urbanist font-bold">
+          fetchcaster
+        </div>
         <form
           onSubmit={onSubmitHandler}
           className="w-full mt-4 mb-10 flex flex-col justify-center items-center text-gray-500"
         >
-          <div className="w-full mb-2 flex justify-center">
+          <div className="w-full mb-5 flex justify-center">
             <input
-              className="peer block w-2/3 rounded-md border border-gray-200 py-[9px] pl-2 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full mx-2 rounded-md border border-gray-200 py-[9px] pl-2 text-sm outline-2 placeholder:text-gray-500"
               id="channelParentUrl"
               type="string"
               name="channelParentUrl"
@@ -53,7 +56,7 @@ export default function Home() {
               required
             />
           </div>
-          <div className="w-1/3 flex flex-col justify-around mt-2 mb-4">
+          {/* <div className="w-1/2 flex flex-col justify-around mt-2 mb-4">
             <input
               className="peer block rounded-md border border-gray-200 py-[9px] mb-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
               type="date"
@@ -70,11 +73,11 @@ export default function Home() {
               onChange={(e) => setEndDate(e.target.value)}
               required
             />
-          </div>
+          </div> */}
 
           <button
             type="submit"
-            className="my-2 bg-primary-blue w-1/3 py-2 rounded-lg text-white font-semibold"
+            className="mt-5 mb-2 bg-primary-blue w-1/3 py-2 rounded-lg text-white font-semibold"
             // formAction={getCastsForChannel}
           >
             Get Casts
