@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { getCastsForChannel } from './server/actions';
 import { FormEvent, useState } from 'react';
 import { saveAs } from 'file-saver';
+import { NEXT_PUBLIC_BASE_URL } from './utils/loadEnv';
 
 export default function Home() {
   const [startDate, setStartDate] = useState('');
