@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { getCastsForChannel } from './server/actions';
 import { FormEvent, useState } from 'react';
 import { saveAs } from 'file-saver';
-import { NEXT_PUBLIC_BASE_URL } from './utils/loadEnv';
+import { API_URL } from './utils/loadEnv';
 
 export default function Home() {
   const [startDate, setStartDate] = useState('');
@@ -18,7 +18,8 @@ export default function Home() {
       endDate,
     };
     console.log('formdata', formData);
-    const wordRes = await fetch(`${NEXT_PUBLIC_BASE_URL}api/casts/list`, {
+    console.log('API_URL', API_URL);
+    const wordRes = await fetch(`${API_URL}api/casts/list`, {
       method: 'POST',
       body: JSON.stringify(formData),
       headers: {
