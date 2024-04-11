@@ -5,6 +5,7 @@ import { Document, Packer, Paragraph, TextRun, ExternalHyperlink } from 'docx';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import getAuthor from '@/app/utils/castParser';
+import getOpenAISummary from '@/app/utils/openAi';
 
 export async function GET(request) {
   return new Response(
@@ -29,7 +30,7 @@ export async function POST(request) {
     let feed = await client.fetchFeed(FeedType.Filter, {
       filterType: FilterType.ParentUrl,
       parentUrl: channelParentUrl,
-      limit: 100,
+      limit: 10,
     });
 
     // console.log(feed);
@@ -85,6 +86,8 @@ export async function POST(request) {
 
     let { casts } = feed;
 
+    console.log(casts[0]);
+
     // Get the date of the last cast
     let lastCast = casts[casts.length - 1];
 
@@ -93,13 +96,13 @@ export async function POST(request) {
     // console.log('lastCastTimestamp', lastCastTimestamp);
     // console.log('Comparison', lastCastTimestamp > startDate);
 
-    // let count = 0;
-    // while (count < 3) {
-    while (lastCastTimestamp >= startDate) {
+    let count = 0;
+    while (count < 3) {
+      // while (lastCastTimestamp >= startDate) {
       feed = await client.fetchFeed(FeedType.Filter, {
         filterType: FilterType.ParentUrl,
         parentUrl: channelParentUrl,
-        limit: 100,
+        limit: 10,
         cursor: feed.next.cursor,
       });
 
@@ -122,7 +125,59 @@ export async function POST(request) {
       //   console.log('Comparison inside while 112', lastCastTimestamp > startDate);
       //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
       //   console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-      //   count++;
+      count++;
+      console.log(
+        `xxxxxxxxxxxxxx Inside WHILE Loop Index is ${count}xxxxxxxxxxxxxxxxxxxx`
+      );
+    }
+
+    for (let i = 0; i < casts.length; i++) {
+      console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      console.log(
+        `xxxxxxxxxxxxxx Inside For Loop Index is ${i}xxxxxxxxxxxxxxxxxxxx`
+      );
+      casts[i]['conversation'] = {};
+      casts[i]['tldr'] = '';
+      if (casts[i].replies.count > 0) {
+        console.log('---------------------------------------');
+        console.log('---------- Inside If Statement Loop -------------');
+        // console.log('Cast without Replies 93', casts[i]);
+        const options = {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            api_key: process.env.NEYNAR_API_KEY,
+          },
+        };
+        console.log('API Key', process.env.NEYNAR_API_KEY);
+
+        const response = await fetch(
+          `https://api.neynar.com/v2/farcaster/cast/conversation?identifier=${casts[i].hash}&type=hash&reply_depth=2&include_chronological_parent_casts=true`,
+          options
+        );
+        const { conversation } = await response.json();
+        // console.log('conversation', conversation);
+        casts[i].conversation = conversation;
+        // console.log('Cast With Replies 110', casts[i]);
+
+        // Pass in conversation to call OpenAI Summary
+        const tldr = await getOpenAISummary(conversation, true);
+        casts[i].tldr = tldr;
+        console.log('tltltltltltltltltltltltltltltltltltltlt');
+        console.log('casts[i].tldr', casts[i].tldr);
+        console.log('tltltltltltltltltltltltltltltltltltltlt');
+      } else {
+        let conversation = casts[i];
+        console.log('---------------------------------------');
+        console.log('---------- Inside Else Statement Loop -------------');
+        const tldr = await getOpenAISummary(conversation, false);
+        casts[i].tldr = casts[i].text;
+        console.log('eleleeleleleleleleleleelelelelelelelelele');
+        console.log('casts[i].tldr', casts[i].tldr);
+        console.log('eleleeleleleleleleleleelelelelelelelelele');
+      }
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
     }
 
     // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -149,23 +204,23 @@ export async function POST(request) {
         }),
 
         new Paragraph(`Timestamp: ${cast.timestamp}`),
-        new Paragraph(`Text: ${cast.text}`),
+        // new Paragraph(`Text: ${cast.text}`),
         new Paragraph({
           children: [
             new TextRun({
               text: `Author FID: ${authorDetails.fid}\n`,
             }),
-            new TextRun(`Custody Address: ${authorDetails.custody_address}\n`),
+            // new TextRun(`Custody Address: ${authorDetails.custody_address}\n`),
             new TextRun(`Username: ${authorDetails.username}\n`),
             new TextRun(`Display Name: ${authorDetails.display_name}\n`),
-            new TextRun(`Profile Picture URL: ${authorDetails.pfp_url}\n`),
-            new TextRun(
-              `Verified Addresses: [${authorDetails.verified_addresses.join(
-                ', '
-              )}]\n`
-            ),
-            new TextRun(`Active Status: ${authorDetails.active_status}\n`),
-            new TextRun(`Power Badge: ${authorDetails.power_badge}`),
+            // new TextRun(`Profile Picture URL: ${authorDetails.pfp_url}\n`),
+            // new TextRun(
+            //   `Verified Addresses: [${authorDetails.verified_addresses.join(
+            //     ', '
+            //   )}]\n`
+            // ),
+            // new TextRun(`Active Status: ${authorDetails.active_status}\n`),
+            // new TextRun(`Power Badge: ${authorDetails.power_badge}`),
           ],
         }),
         new Paragraph({
@@ -180,6 +235,9 @@ export async function POST(request) {
               link: castUrl,
             }),
           ],
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `Summary: ${cast.tldr}\n\n` })],
         }),
 
         // Add more Paragraph objects as needed
