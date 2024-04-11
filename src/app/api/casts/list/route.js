@@ -30,7 +30,7 @@ export async function POST(request) {
     let feed = await client.fetchFeed(FeedType.Filter, {
       filterType: FilterType.ParentUrl,
       parentUrl: channelParentUrl,
-      limit: 10,
+      limit: 100,
     });
 
     // console.log(feed);
@@ -97,12 +97,12 @@ export async function POST(request) {
     // console.log('Comparison', lastCastTimestamp > startDate);
 
     let count = 0;
-    while (count < 3) {
-      // while (lastCastTimestamp >= startDate) {
+    // while (count < 3) {
+    while (lastCastTimestamp >= startDate) {
       feed = await client.fetchFeed(FeedType.Filter, {
         filterType: FilterType.ParentUrl,
         parentUrl: channelParentUrl,
-        limit: 10,
+        limit: 100,
         cursor: feed.next.cursor,
       });
 
@@ -131,11 +131,14 @@ export async function POST(request) {
       );
     }
 
+    let allText = '';
+
     for (let i = 0; i < casts.length; i++) {
       console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
       console.log(
         `xxxxxxxxxxxxxx Inside For Loop Index is ${i}xxxxxxxxxxxxxxxxxxxx`
       );
+      let allMessagesForOneThread = '';
       casts[i]['conversation'] = {};
       casts[i]['tldr'] = '';
       if (casts[i].replies.count > 0) {
@@ -158,27 +161,47 @@ export async function POST(request) {
         const { conversation } = await response.json();
         // console.log('conversation', conversation);
         casts[i].conversation = conversation;
+
+        allMessagesForOneThread += `${
+          casts[i].text
+        }, ${conversation.cast.direct_replies
+          .map((reply) => reply.text)
+          .join('\n')}`;
         // console.log('Cast With Replies 110', casts[i]);
 
-        // Pass in conversation to call OpenAI Summary
-        const tldr = await getOpenAISummary(conversation, true);
-        casts[i].tldr = tldr;
-        console.log('tltltltltltltltltltltltltltltltltltltlt');
-        console.log('casts[i].tldr', casts[i].tldr);
-        console.log('tltltltltltltltltltltltltltltltltltltlt');
+        // // Pass in conversation to call OpenAI Summary
+        // const tldr = await getOpenAISummary(conversation, true);
+        // casts[i].tldr = tldr;
+        // console.log('tltltltltltltltltltltltltltltltltltltlt');
+        // console.log('casts[i].tldr', casts[i].tldr);
+        // console.log('tltltltltltltltltltltltltltltltltltltlt');
       } else {
         let conversation = casts[i];
+        allMessagesForOneThread += casts[i].text;
         console.log('---------------------------------------');
         console.log('---------- Inside Else Statement Loop -------------');
-        const tldr = await getOpenAISummary(conversation, false);
-        casts[i].tldr = casts[i].text;
-        console.log('eleleeleleleleleleleleelelelelelelelelele');
-        console.log('casts[i].tldr', casts[i].tldr);
-        console.log('eleleeleleleleleleleleelelelelelelelelele');
+        // const tldr = await getOpenAISummary(conversation, false);
+        // casts[i].tldr = casts[i].text;
+        // console.log('eleleeleleleleleleleleelelelelelelelelele');
+        // console.log('casts[i].tldr', casts[i].tldr);
+        // console.log('eleleeleleleleleleleleelelelelelelelelele');
       }
+      allText += allMessagesForOneThread;
       console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
       console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+
+      // Pass in conversation to call OpenAI Summary
+      // const tldr = await getOpenAISummary(allText);
+      // casts[i].tldr = tldr;
+      // console.log('tltltltltltltltltltltltltltltltltltltlt');
+      // console.log('casts[i].tldr', casts[i].tldr);
+      // console.log('tltltltltltltltltltltltltltltltltltltlt');
     }
+    const tldr = await getOpenAISummary(allText);
+    // casts[i].tldr = tldr;
+    console.log('tltltltltltltltltltltltltltltltltltltlt');
+    console.log('tldr', tldr);
+    console.log('tltltltltltltltltltltltltltltltltltltlt');
 
     // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     // console.log('cast[0]', casts[0]);
@@ -244,6 +267,14 @@ export async function POST(request) {
       ];
     });
 
+    const report = new Paragraph({
+      children: [
+        new TextRun({
+          text: `Summary: ${tldr}\n\n`,
+        }),
+      ],
+    });
+
     const doc = new Document({
       creator: 'Fetchcaster',
       description:
@@ -252,7 +283,7 @@ export async function POST(request) {
       sections: [
         {
           properties: {},
-          children: castParagraphs, // We'll add Paragraphs here
+          children: [report], // We'll add Paragraphs here
         },
       ],
     });

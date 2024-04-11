@@ -3,32 +3,32 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI();
 export default async function getOpenAISummary(
-  conversation,
-  hasReplies = false
+  conversation
+  //   hasReplies = false
 ) {
-  let allMessages = '';
-  let originalMessage = '';
+  //   let allMessages = '';
+  //   let originalMessage = '';
   console.log('oooooooooooooooooooooooooooooooo');
-  console.log('COnversation sent inside AI:', conversation);
-  if (hasReplies) {
-    originalMessage = conversation.cast.text;
-    allMessages = `${originalMessage}, ${conversation.cast.direct_replies
-      .map((reply) => reply.text)
-      .join('\n')}`;
-  } else {
-    originalMessage = conversation.text;
-    allMessages = originalMessage;
-  }
+  console.log('COnversation sent inside AI:', conversation.slice(0, 10));
+  //   if (hasReplies) {
+  //     originalMessage = conversation.cast.text;
+  //     allMessages = `${originalMessage}, ${conversation.cast.direct_replies
+  //       .map((reply) => reply.text)
+  //       .join('\n')}`;
+  //   } else {
+  //     originalMessage = conversation.text;
+  //     allMessages = originalMessage;
+  //   }
 
   console.log('oooooooooooooooooooooooooooooooo');
   console.log('oooooooooooooooooooooooooooooooo');
-  console.log('10 allMessages', allMessages);
+  //   console.log('10 allMessages', allMessages);
   console.log('oooooooooooooooooooooooooooooooo');
 
   const aiMessages = [
     { role: 'system', content: CHAT_SUMMARY_PROMPT },
     // { role: "user", content: `Previous Summary:\n${lastGeneratedReport[0].generated_report}\n\nRecent Conversation:\n${allMessages}` },
-    { role: 'user', content: `Recent Conversation:\n${allMessages}` },
+    { role: 'user', content: `Recent Conversation:\n${conversation}` },
   ];
 
   const completion = await openai.chat.completions.create({
